@@ -1,18 +1,20 @@
 # Claude Code Configuration Collection
 
-A curated collection of custom agents, commands, hooks, and settings for enhancing your Claude Code experience. This repository contains powerful configurations designed to supercharge your development workflow with Claude.
+A curated collection of sub agents, custom slash commands, hooks, and settings for enhancing your Claude Code experience. This repository contains powerful configurations designed to supercharge your development workflow with Claude.
 
 ## Overview
 
 This repository provides a comprehensive Claude Code setup that includes:
-- **Custom Agents**: Specialized AI agents for code simplification, security auditing, performance optimization, and bug hunting
-- **Custom Commands**: Streamlined Git workflows and final audit procedures
+- **Sub Agents**: Specialized AI agents for code simplification, security auditing, performance optimization, and bug hunting
+- **Custom Slash Commands**: Streamlined Git workflows and final audit procedures
 - **Hooks**: macOS notifications for real-time feedback on Claude's actions
 - **Settings**: Optimized permissions and configurations for common development tasks
 
 ## Features
 
-### 🤖 Custom Agents
+### 🤖 Sub Agents
+
+Sub agents are specialized AI assistants that Claude Code can delegate tasks to. Each operates in its own context window and can be configured with specific tools and behaviors.
 
 #### Code Simplifier (`agents/code-simplifier.md`)
 Refactors and optimizes existing code for simplicity, clarity, and maintainability. Excels at:
@@ -42,7 +44,9 @@ Performs comprehensive security analysis on web applications and APIs:
 - Assessing attack surfaces
 - Evaluating data protection measures
 
-### 📝 Custom Commands
+### 📝 Custom Slash Commands
+
+Custom slash commands allow you to define frequently-used prompts as Markdown files that Claude Code can execute.
 
 #### Commit Command (`commands/commit.md`)
 Intelligent Git commit workflow that:
@@ -89,14 +93,14 @@ cd claude_config
 
 2. Copy configurations to your Claude directory:
 ```bash
-# Copy agents
+# For user-level (available across all projects)
 cp -r agents ~/.claude/agents/
-
-# Copy commands  
 cp -r commands ~/.claude/commands/
-
-# Copy hooks
 cp -r hooks ~/.claude/hooks/
+
+# For project-level (specific to current project)
+cp -r agents .claude/agents/
+cp -r commands .claude/commands/
 
 # Copy status line script
 cp statusline-command.sh ~/.claude/
@@ -115,7 +119,7 @@ cp ~/.claude/settings.json ~/.claude/settings.json.backup
 cp settings.json ~/.claude/settings.json
 ```
 
-4. Install dependencies:
+4. Install dependencies (ONLY NECESSARY FOR MAC OS NOTIFICATIONS)
 ```bash
 # For macOS notifications
 brew install terminal-notifier
@@ -124,107 +128,6 @@ brew install terminal-notifier
 uv pip install -r requirements.txt
 ```
 
-## Usage
-
-### Using Custom Agents
-
-In Claude Code, reference agents by name:
-```
-/task code-simplifier "Refactor this module to remove unnecessary complexity"
-/task security-auditor "Review this API endpoint for vulnerabilities"
-/task performance-optimizer "Optimize database queries in this service"
-/task edge-case-bug-hunter "Find potential bugs in this state management"
-```
-
-### Using Custom Commands
-
-Invoke commands directly:
-```
-/run commit all "Initial implementation"
-/run final-audit
-```
-
-### Status Line
-
-The custom status line displays:
-- Current Claude model (Sonnet/Haiku/Opus)
-- Number of unstaged/untracked files in Git
-- Estimated remaining context tokens
-
-### Notifications
-
-If configured properly, you'll receive macOS notifications for:
-- Command executions
-- File operations
-- Search completions
-- Task completions
-
-## Configuration Details
-
-### Permissions
-
-The configuration includes pre-approved permissions for common operations:
-- Directory operations: `mkdir`, `tree`, `find`
-- Git operations: `init`, `add`, `commit`, `status`, `diff`, `log`
-- File operations: `ls`, `cp`, `mv`, `cat`, `touch`
-
-### Hook System
-
-Hooks are triggered at various points:
-- **PreToolUse**: Before tool execution
-- **Notification**: For user notifications
-- **Stop**: When operations complete
-
-## Customization
-
-### Adding New Agents
-
-Create a new markdown file in `agents/` with the format:
-```markdown
----
-name: agent-name
-description: Agent description
-model: opus/sonnet/haiku
-color: cyan/magenta/yellow
----
-
-Agent instructions and behavior...
-```
-
-### Adding New Commands
-
-Create a new markdown file in `commands/` with:
-```markdown
----
-allowed-tools: Tool patterns
-argument-hint: Expected arguments
-description: Command description
-model: opus/sonnet/haiku
----
-
-Command implementation...
-```
-
-### Modifying Hooks
-
-Edit the Python scripts in `hooks/` to customize notification behavior or add new hook types.
-
-## Requirements
-
-- Claude Code CLI
-- macOS (for notification hooks)
-- Git
-- Python 3.8+
-- terminal-notifier (for macOS notifications)
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit pull requests with:
-- New custom agents
-- Additional commands
-- Enhanced hooks
-- Improved configurations
-
 ## License
 
 MIT License - See LICENSE file for details
@@ -232,6 +135,10 @@ MIT License - See LICENSE file for details
 ## Support
 
 For issues, questions, or suggestions, please open an issue on GitHub.
+
+For Claude Code specific help:
+- Documentation: https://docs.anthropic.com/en/docs/claude-code
+- Built-in help: Use `/help` in Claude Code
 
 ---
 

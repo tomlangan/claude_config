@@ -1,66 +1,107 @@
 ---
-allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git add:*), Bash(git commit:*), Bash(git log:*), Bash(git rev-parse:*), Bash(git branch:*), Bash(ls:*), Bash(cat:*), Bash(pnpm test:*), Bash(npm run test:*), Bash(yarn test:*), Bash(pytest:*), Bash(go test:*), Bash(make test:*)
-argument-hint: [all|docs-only|code-only|dry-run|test] [optional summary seed]
-description: Analyze diffs, update docs/tasks/{todo,backlog,completed}.md, then stage & commit code+docs (no push, no Claude boilerplate)
-model: sonnet
+allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git add:*), Bash(git commit:*), Bash(git log:*), Bash(git rev-parse:*), Bash(git branch:*), Bash(ls:*), Bash(find:*), Bash(cat:*), Bash(date:*)
+description: Validate the task docs, summarize actual work strictly from git evidence (optionally show context hints), delegate to sub-agents for doc edits and commit message, stage ONLY task/feature docs, then commit. No push. No arguments.
 ---
 
-# Context (auto)
-- Repo root: !`git rev-parse --show-toplevel || pwd`
-- Branch: !`git branch --show-current`
-- Status: !`git status --porcelain`
-- Changed (unstaged vs HEAD): !`git diff --name-only`
-- Changed (staged): !`git diff --name-only --staged`
-- Recent commits: !`git log --oneline -10`
-- Tasks dir: !`ls -1 docs/tasks 2>/dev/null || echo "__DOCS_TASKS_DIR_MISSING__"`
-- todo.md: !`test -f docs/tasks/todo.md && (printf "\n---FILE:todo---\n" && cat docs/tasks/todo.md) || echo "__MISSING_todo__"`
-- backlog.md: !`test -f docs/tasks/backlog.md && (printf "\n---FILE:backlog---\n" && cat docs/tasks/backlog.md) || echo "__MISSING_backlog__"`
-- completed.md: !`test -f docs/tasks/completed.md && (printf "\n---FILE:completed---\n" && cat docs/tasks/completed.md) || echo "__MISSING_completed__"`
+# Commit (Docs-First, Evidence-Backed, Sub‑agent Assisted)
 
-# Task
+> Zero-argument, deterministic workflow. Use only facts from `git` for decisions; chat/PR context is advisory. **Do not push.**  
+> Sub‑agents: use **doc-writer** PROACTIVELY for doc edits (task + feature docs); use **commit-message-builder** MUST BE USED to craft the commit message.
 
-You will perform a **single atomic shipment**:
-1) **Validate** the docs system
-   - All three files must exist: `docs/tasks/todo.md`, `backlog.md`, `completed.md`.
-   - If any are missing or conflicting variants exist (e.g., `TODO.md`, `to-do.md`), output **Validation: missing/conflicts** with details and **STOP** (no edits, no commit).
+## 1) Validate the Docs System (STOP on failure)
+Required task files (exact paths):
+- `docs/tasks/todo.md`
+- `docs/tasks/backlog.md`
+- `docs/tasks/completed.md`
 
-2) **Summarize actual work done**
-   - Use `git status/diff/log` to infer what changed. You **may** use current chat context as hints but **must not invent** items absent from diffs/logs.
-   - If assumptions are necessary, list them under **Assumptions**.
+Scan for conflicting variants (case/typos), e.g.: `TODO.md`, `to-do.md`, `backlogs.md`, `completed.MD`, or task files at other roots (`/docs/todo.md`, `/todo.md`).
 
-3) **Update documentation in place**
-   - **todo.md**: Mark items completed and move them to `completed.md`. Add any new concrete tasks implied by diffs.
-   - **backlog.md**: Add/adjust deferred/future items discovered.
-   - **completed.md**: Append newly completed entries with `YYYY-MM-DD`, short description, and (if applicable) the leading commit hash(s).
-   - Preserve headings/format; only touch justified sections.
+Run:
+```bash
+ls -la docs || true
+ls -la docs/tasks || true
+find . -maxdepth 3 -iregex '.*\(todo\|to-do\|backlog\|completed\)\.md' | sort || true
+```
 
-4) **(Optional) Run tests**
-   - If `$ARGUMENTS` contains `test`, run the project’s tests (pnpm/npm/yarn/pytest/go/make). If tests fail, print failures and **STOP** (no commit).
+**If any required task file is missing OR conflicting variants exist:**
+- Output **Validation: missing/conflicts** with a bullet list of issues.
+- **STOP** (no edits, no staging, no commit).
 
-5) **Stage & commit (no push)**
-   - **Default**: stage **all modified files** (code + docs).
-   - If `$ARGUMENTS` has `docs-only`, stage only the three task files.
-   - If `$ARGUMENTS` has `code-only`, stage everything **except** the three task files.
-   - If `$ARGUMENTS` has `dry-run`, make no changes—show what you *would* stage and the exact commit message, then stop.
-   - Compose a **single** Conventional Commit subject, imperative, ≤50 chars. Prefer:
-     - `📝 docs(tasks): sync with latest changes` (if docs-only)
-     - `✨ feat(<scope>): <summary>` / `🐛 fix(<scope>): <summary>` when code is included; add a 1–3 line body if helpful.
-   - **Absolutely do not** add any assistant/model signatures, “Co-authored-by,” or boilerplate footer lines.
-   - Execute with Bash and show `git log --oneline -1` at the end.
+> Note: Feature docs (under `docs/features/`) are optional and may be created/updated if justified by evidence.
 
-# Output format
-- **Validation**: ok | missing | conflicts (with bullet list)
-- **Change Summary**: bullets (facts from diff/log)
-- **Doc Edits**: bullets per file
-- **Commit**: show staged paths and the exact commit subject (and body if used)
+---
 
-# Implementation notes (follow precisely)
-- Abort on missing/conflicts.
-- Use today’s date for `completed.md` entries.
-- Keep unrelated sections stable; do not reorder without necessity.
-- For commit subject, if `$ARGUMENTS` includes a trailing phrase, you may use it as a seed but keep the final subject concise.
-- Use Bash tool to run:
-  - `git add -A` (default) OR selective `git add` per the mode
-  - `git diff --name-only --staged`
-  - `git commit -m "<subject>"` [and `-m "<wrapped body>"` if present]
-  - finally `git log --oneline -1`
+## 2) Summarize Actual Work Done (facts only)
+Collect signals:
+```bash
+git branch --show-current
+git status --porcelain
+git diff --name-only
+git diff --staged
+git log --oneline -5
+```
+
+### 2a) Context Hints (optional, non-authoritative)
+List helpful hints from chat/PR context if present, clearly labeled.
+
+### 2b) Evidence Matrix (authoritative)
+Produce a **Change Summary (evidence-backed)** where each bullet cites files/hunks from git outputs.  
+If you must infer intent beyond raw diff, place under **Assumptions**.
+
+---
+
+## 3) Update Documentation in Place (via sub-agent)
+Delegate to **doc-writer** (PROACTIVELY) with the evidence and desired targets:
+- Allowed in this workflow:  
+  - Task docs: `docs/tasks/todo.md`, `docs/tasks/backlog.md`, `docs/tasks/completed.md`  
+  - Feature docs: any `docs/features/*.md` (create if justified by evidence)
+- Minimal diffs, preserve headings/format/style.
+- In `completed.md`, append as `YYYY-MM-DD — <short description> [<leading commit hash(es) if relevant>]` using `date +%F`.
+
+Apply the patches returned by **doc-writer**.
+
+If **no doc changes are produced**, output **No doc changes to commit** and **STOP**.
+
+---
+
+## 4) Stage All Changes (Docs + Code)
+Stage changes under the allowed doc paths:
+```bash
+git add -A
+```
+(Stage all changes — docs and any code/files ready to commit.)
+
+---
+
+## 5) Compose a Single Commit Message (via sub-agent)
+Delegate to **commit-message-builder** (MUST BE USED) with the staged diff to craft the message:
+- If staged files are all docs, enforce type `docs` and an appropriate scope (e.g., `tasks`, `features`, or `docs`).
+- Must follow Conventional Commits; include emoji; no footers/signatures.
+
+Use the returned `SUBJECT` and (optional) `BODY` verbatim.
+
+---
+
+## 6) Commit (no push)
+```bash
+git commit -m "<subject>" -m "<optional body>"
+git log --oneline -1
+```
+
+---
+
+## Output Checklist
+- **Validation**: OK | missing/conflicts (if conflicts, stopped)
+- **Context Hints**: (optional list)
+- **Change Summary (evidence-backed)**: bullets tied to files/hunks
+- **Assumptions**: (if any)
+- **Doc Edits**: bullets per file touched
+- **Commit**: exact subject (and body if any)
+
+## Guardrails
+- Evidence comes from `git` outputs; context is advisory only.
+- If validation fails → **STOP**.
+- If no doc edits → **STOP**.
+- Only modify/stage task docs and feature docs in this workflow.
+- Do not run tests here.
+- Do not push.
