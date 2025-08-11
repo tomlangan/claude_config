@@ -9,14 +9,20 @@ description: Validate the task docs, summarize actual work strictly from git evi
 > Sub‑agents: use **doc-writer** PROACTIVELY for doc edits (task + feature docs); use **commit-message-builder** MUST BE USED to craft the commit message.
 
 ## 1) Validate the Docs System (STOP on failure)
-Required task files (exact paths):
+First, ensure we're working from the git repository root:
+```bash
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+cd "$PROJECT_ROOT"
+```
+
+Required task files (exact paths relative to project root):
 - `docs/tasks/todo.md`
 - `docs/tasks/backlog.md`
 - `docs/tasks/completed.md`
 
 Scan for conflicting variants (case/typos), e.g.: `TODO.md`, `to-do.md`, `backlogs.md`, `completed.MD`, or task files at other roots (`/docs/todo.md`, `/todo.md`).
 
-Run:
+Run (from project root):
 ```bash
 ls -la docs || true
 ls -la docs/tasks || true
