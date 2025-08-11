@@ -12,12 +12,23 @@
       "Bash(mv:*)",
       "Bash(cat:*)",
       "Bash(touch:*)",
+      "Bash(grep:*)",
+      "Bash(curl:*)",      
+      "Bash(chmod:*)",      
       "Bash(git commit:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)"
     ],
-    "deny": []
+    "deny": [],
+    "autoApprovePatterns": [
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(pwd:*)",
+      "Bash(ls:*)",
+      "Bash(cd:* && git status:*)"  // Add here for auto-approval
+    ]
   },
   "hooks": {
     "PreToolUse": [
