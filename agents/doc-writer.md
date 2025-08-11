@@ -1,3 +1,4 @@
+---
 name: doc-writer
 description: Create or update repository documentation from evidence (git diff, repo files) with minimal, accurate edits. Use PROACTIVELY when code changes imply missing/outdated docs. MUST BE USED when staged diffs touch user-visible behavior, APIs, data models, migrations, or feature flags.
 model: opus

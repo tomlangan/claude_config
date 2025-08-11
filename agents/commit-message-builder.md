@@ -1,3 +1,4 @@
+---
 name: commit-message-builder
 description: Generate an evidence-backed Conventional Commit message (subject + optional body) from staged changes. Use PROACTIVELY when a commit is about to be created. MUST BE USED in guarded workflows that produce a commit.
 model: opus
