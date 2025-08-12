@@ -59,6 +59,7 @@ venv.bak/
 *.launch
 .settings/
 *.sublime-workspace
+.claude
 
 # Logs and temporary files
 *.log
