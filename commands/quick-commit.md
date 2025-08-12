@@ -8,10 +8,9 @@ description: Stage all changes and commit with an inferred Conventional Commit m
 ## Steps
 
 0. **Ensure we're at the git repository root**
-   ```bash
-   PROJECT_ROOT="$(git rev-parse --show-toplevel)"
-   cd "$PROJECT_ROOT"
-   ```
+```bash
+cd "$(git rev-parse --show-toplevel)"
+```
 
 1. **Stage all changes**
    ```bash

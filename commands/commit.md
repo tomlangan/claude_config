@@ -11,8 +11,7 @@ description: Validate the task docs, summarize actual work strictly from git evi
 ## 1) Validate the Docs System (STOP on failure)
 First, ensure we're working from the git repository root:
 ```bash
-PROJECT_ROOT="$(git rev-parse --show-toplevel)"
-cd "$PROJECT_ROOT"
+cd "$(git rev-parse --show-toplevel)"
 ```
 
 Required task files (exact paths relative to project root):
