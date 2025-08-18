@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git add:*), Bash(git commit:*), Bash(git log:*), Bash(git rev-parse:*), Bash(git branch:*), Bash(ls:*), Bash(find:*), Bash(cat:*), Bash(date:*)
+allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git add:*), Bash(git commit:*), Bash(git log:*), Bash(git branch:*), Bash(ls:*), Bash(cat:*), Bash(date:*), Bash(~/.claude/go-to-git-root.sh:*), Bash(~/.claude/find-todo-files.sh:*)
 description: Validate the task docs, summarize actual work strictly from git evidence (optionally show context hints), delegate to sub-agents for doc edits and commit message, stage ONLY task/feature docs, then commit. No push. No arguments.
 ---
 
@@ -11,7 +11,7 @@ description: Validate the task docs, summarize actual work strictly from git evi
 ## 1) Validate the Docs System (STOP on failure)
 First, ensure we're working from the git repository root:
 ```bash
-cd "$(git rev-parse --show-toplevel)"
+~/.claude/go-to-git-root.sh
 ```
 
 Required task files (exact paths relative to project root):
@@ -25,7 +25,7 @@ Run (from project root):
 ```bash
 ls -la docs || true
 ls -la docs/tasks || true
-find . -maxdepth 3 -iregex '.*\(todo\|to-do\|backlog\|completed\)\.md' | sort || true
+~/.claude/find-todo-files.sh
 ```
 
 **If any required task file is missing OR conflicting variants exist:**

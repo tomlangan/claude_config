@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git diff:*), Bash(git commit:*)
+allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git diff:*), Bash(git commit:*), Bash(~/.claude/go-to-git-root.sh:*)
 description: Stage all changes and commit with an inferred Conventional Commit message (no push).
 ---
 
@@ -9,7 +9,7 @@ description: Stage all changes and commit with an inferred Conventional Commit m
 
 0. **Ensure we're at the git repository root**
 ```bash
-cd "$(git rev-parse --show-toplevel)"
+~/.claude/go-to-git-root.sh
 ```
 
 1. **Stage all changes**
