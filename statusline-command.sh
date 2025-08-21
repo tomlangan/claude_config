@@ -3,76 +3,93 @@
 # Read JSON input from stdin
 input=$(cat)
 
-# Extract model display name and transcript path
+# Extract model display name
 model_name=$(echo "$input" | jq -r '.model.display_name')
-transcript_path=$(echo "$input" | jq -r '.transcript_path')
 
 # Get current working directory from JSON
 cwd=$(echo "$input" | jq -r '.workspace.current_dir')
 
+# Get just the folder name for display
+folder_name=$(basename "$cwd")
+
 # Change to the working directory to check git status
 cd "$cwd" 2>/dev/null || cd "$(pwd)"
 
-# Count unstaged and untracked files
-unstaged_count=0
+# Initialize git file counts
+new_files=0
+modified_files=0
+deleted_files=0
+untracked_files=0
+
 if git rev-parse --git-dir > /dev/null 2>&1; then
-    # Count unstaged files (modified, deleted, but not added to index)
-    unstaged=$(git diff --name-only | wc -l | tr -d ' ')
-    # Count untracked files
-    untracked=$(git ls-files --others --exclude-standard | wc -l | tr -d ' ')
-    unstaged_count=$((unstaged + untracked))
+    # Get git status in porcelain format for precise parsing
+    git_status=$(git status --porcelain 2>/dev/null)
+    
+    # Count different types of changes
+    while IFS= read -r line; do
+        if [[ -n "$line" ]]; then
+            # First character is staged status, second is unstaged status
+            staged_status="${line:0:1}"
+            unstaged_status="${line:1:1}"
+            
+            # Count based on status codes
+            case "$staged_status$unstaged_status" in
+                "A "*|"AM") new_files=$((new_files + 1)) ;;        # Added (new)
+                "M "*|"MM"|" M") modified_files=$((modified_files + 1)) ;; # Modified
+                "D "*|" D") deleted_files=$((deleted_files + 1)) ;;  # Deleted
+                "??") untracked_files=$((untracked_files + 1)) ;;   # Untracked
+                "R "*|"RM") modified_files=$((modified_files + 1)) ;; # Renamed (count as modified)
+                "C "*|"CM") modified_files=$((modified_files + 1)) ;; # Copied (count as modified)
+            esac
+        fi
+    done <<< "$git_status"
 fi
 
-# Estimate context usage from transcript
-context_info="N/A"
-context_color="128;128;128"  # Gray for unknown
+# Build git status string
+git_parts=()
+if [[ $new_files -gt 0 ]]; then
+    git_parts+=("${new_files}N")
+fi
+if [[ $modified_files -gt 0 ]]; then
+    git_parts+=("${modified_files}M")
+fi
+if [[ $deleted_files -gt 0 ]]; then
+    git_parts+=("${deleted_files}D")
+fi
+if [[ $untracked_files -gt 0 ]]; then
+    git_parts+=("${untracked_files}U")
+fi
 
-if [[ -f "$transcript_path" && -r "$transcript_path" ]]; then
-    # Get rough character count from transcript
-    char_count=$(wc -c < "$transcript_path" 2>/dev/null || echo "0")
+# Join git parts with spaces, or show "clean" if no changes
+if [[ ${#git_parts[@]} -eq 0 ]]; then
+    git_info="clean"
+else
+    git_info=$(IFS=' '; echo "${git_parts[*]}")
+fi
+
+# Get transcript path for context window calculation
+transcript_path=$(echo "$input" | jq -r '.transcript_path')
+context_percentage="?"
+
+# Calculate context window percentage if transcript exists
+if [[ -f "$transcript_path" ]]; then
+    # Get file size in bytes
+    file_size=$(stat -f%z "$transcript_path" 2>/dev/null || stat -c%s "$transcript_path" 2>/dev/null || echo "0")
     
-    # Estimate tokens (rough approximation: ~4 characters per token)
-    estimated_tokens=$((char_count / 4))
-    
-    # Model-specific context limits (approximate)
-    case "$model_name" in
-        *"Sonnet"*|*"sonnet"*)
-            max_tokens=200000
-            ;;
-        *"Haiku"*|*"haiku"*)
-            max_tokens=200000
-            ;;
-        *"Opus"*|*"opus"*)
-            max_tokens=200000
-            ;;
-        *)
-            max_tokens=200000  # Default assumption
-            ;;
-    esac
-    
-    # Calculate remaining tokens
-    remaining_tokens=$((max_tokens - estimated_tokens))
-    
-    # Format remaining tokens (K for thousands)
-    if [[ $remaining_tokens -gt 1000 ]]; then
-        remaining_k=$((remaining_tokens / 1000))
-        context_info="${remaining_k}K"
+    # Estimate context window usage (rough approximation: 200k chars = ~160k tokens = ~80% of 200k context)
+    # Using conservative estimate: 1 char ≈ 0.8 tokens, 200k context window
+    if [[ $file_size -gt 0 ]]; then
+        # Convert bytes to approximate tokens, then to percentage of 200k context window
+        estimated_tokens=$((file_size * 80 / 100))  # rough chars to tokens conversion
+        context_percentage=$((estimated_tokens * 100 / 200000))  # percentage of 200k context
+        if [[ $context_percentage -gt 100 ]]; then
+            context_percentage=100
+        fi
     else
-        context_info="$remaining_tokens"
-    fi
-    
-    # Color based on remaining context (Red < 20K, Yellow < 50K, Green >= 50K)
-    if [[ $remaining_tokens -lt 20000 ]]; then
-        context_color="255;0;0"    # Red - low context
-    elif [[ $remaining_tokens -lt 50000 ]]; then
-        context_color="255;255;0"  # Yellow - medium context
-    else
-        context_color="34;139;34"  # Forest Green - plenty of context (softer)
+        context_percentage=0
     fi
 fi
 
-# Format output with colors using printf
-# Orange for model name (RGB: 255,165,0)
-# Forest Green for file count (RGB: 34,139,34) - softer green
-# Dynamic color for context remaining
-printf "\033[38;2;255;165;0m%s\033[0m | \033[38;2;34;139;34m%d files\033[0m | \033[38;2;%sm~%s left\033[0m" "$model_name" "$unstaged_count" "$context_color" "$context_info"
+# Format output with muted colors similar to the screenshot style
+# Using color 103 (muted purple-gray) as shown in the screenshot
+printf "\x1b[38;5;103m> %s | %s | %s | %s%% ctx\x1b[0m" "$model_name" "$folder_name" "$git_info" "$context_percentage"

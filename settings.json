@@ -4,7 +4,7 @@
     "allow": [
       "Bash(mkdir:*)",
       "Bash(tree:*)",
-      "Bash(find:*)",
+      "Bash(~/.claude/find-todo-files.sh:*)",
       "Bash(git init:*)",
       "Bash(git add:*)",
       "Bash(ls:*)",
@@ -13,28 +13,31 @@
       "Bash(cat:*)",
       "Bash(touch:*)",
       "Bash(grep:*)",
-      "Bash(curl:*)",      
-      "Bash(chmod:*)",      
+      "Bash(curl:*)",
+      "Bash(chmod:*)",
+      "Bash(~/.claude/go-to-git-root.sh:*)",
+      "Bash(source ~/.claude/go-to-git-root.sh:*)",
+      "Bash(cd:*)",
+      "Bash(~/.claude/api-report.sh:*)",
+      "Bash(git rev-parse:*)",
       "Bash(git commit:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
+      "Bash(sleep *)",
       "Bash(git log:*)"
     ],
-    "deny": [],
-    "autoApprovePatterns": [
-      "Bash(git status:*)",
-      "Bash(git diff:*)",
-      "Bash(git log:*)",
-      "Bash(pwd:*)",
-      "Bash(ls:*)",
-      "Bash(cd:* && git status:*)"  // Add here for auto-approval
-    ]
+    "deny": []
   },
   "hooks": {
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "hooks": []
+        "hooks": [
+          {
+            "type": "command",
+            "command": "date +%s > ~/.claude/last_command_start"
+          }
+        ]
       }
     ],
     "Notification": [
@@ -60,11 +63,12 @@
       }
     ]
   },
-  "feedbackSurveyState": {
-    "lastShownTime": 1754026501149
-  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline-command.sh"
-  }
+  },
+  "feedbackSurveyState": {
+    "lastShownTime": 1754026501149
+  },
+  "model": "sonnet[1m]"
 }
