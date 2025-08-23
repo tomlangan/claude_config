@@ -11,7 +11,7 @@ description: Validate the task docs, summarize actual work strictly from git evi
 ## 1) Validate the Docs System (STOP on failure)
 First, ensure we're working from the git repository root:
 ```bash
-~/.claude/go-to-git-root.sh
+source ~/.claude/go-to-git-root.sh
 ```
 
 Required task files (exact paths relative to project root):

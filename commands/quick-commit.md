@@ -9,7 +9,7 @@ description: Stage all changes and commit with an inferred Conventional Commit m
 
 0. **Ensure we're at the git repository root**
 ```bash
-~/.claude/go-to-git-root.sh
+source ~/.claude/go-to-git-root.sh
 ```
 
 1. **Stage all changes**
