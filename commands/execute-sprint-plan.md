@@ -19,9 +19,9 @@ Once a sprint plan is in place, use this command to execute it and write the cod
    - Read `sprint-plan.md`. Ensure it contains incomplete stories and/or tasks. If there are no incomplete stories/tasks *Stop* and explain to the user that this sprint plan already looks complete and they might want to run `/plan-sprint <folder-slug>` to generate new tasks.
    - Check for internal references (such as files referenced in docs sub-folders). If any docs are missing, warn the user.
 
-## Execute the sprint plan
+## Execute every story in the sprint plan
 
-Perform the following sequence for each story, one story at a time, until all the stories are implemented:
+Perform the following sequence for the entir epic in this sprint plan.  For each unfinished story in the sprint plan, one at a time, in order, until all the stories have been fully implemented:
 
 1. **Write the code for the story, starting with tests**
     - Implement all tests for a story before implementing any of the work items
@@ -37,10 +37,10 @@ Perform the following sequence for each story, one story at a time, until all th
     - Run a build of the code and tests.  Verify that they all build. If they do not build, come up with robust fixes for each build error and warning until the build completes cleanly.
     - Execute all the tests. Verify that all the tests pass. If any tests fail, come up with robust fixes for either the test or the product code (ensuring you fix the right one!) until all tests pass. Do not skip any tests.
 
-4. **Mark story complete**
-    - Once the story has been validated
+4. **Mark story complete and move on to the next**
+    - Once the story has been validated, add a check next to it
+    - If there are any incomplete stories, go to step 1 and implement the next one
 
-After step 3, check if there are more unfinished stories and repeat the process for the next unfinished story in order.
 
 ## Update the TDD
 

@@ -1,12 +1,14 @@
 # CLAUDE.md
 
 ### Intent
-- **LIMIT CHANGES TO REQUESTED SCOPE** - Do not modify code or behavior outside the scope of what's been requested
-- **BACKGROUND** - Check for documents under docs\ that might be relevant background to what you're doing
+- **ONLY MAKE CHANGES TO the REQUESTED SCOPE** - Do not modify code or behavior outside the scope of what's been requested
+- **MAKE ALL THE REQUESTED CHANGES** - Do not "defer work to later" -- perform all the requested work.
+- **BACKGROUND INFORMATION** - Check for documents under docs\ that might be relevant background to what you're doing
 
 ### Code Quality
 - **NO CODE DUPLICATION** - Check existing codebase to reuse functions
 - **NO DEAD CODE** - Either use or delete completely
+- **CLEARLY LABEL MOCK/PLACEHOLDER COMPONENTS** - Mock data or mock interfaces can be useful in agile development, but be sure that they are named with the word "mock" in them (either the file name or the function/data structure/variable or both) so it's clear to future maintainers that they need to be replaced later
 - **CONSISTENT NAMING** - Follow existing codebase patterns
 - **SIMPLICITY** - Simple, easy-to-read functions with comments instead of fancy/complex design patterns
 - **NO RESOURCE LEAKS** - Close connections, clear timeouts, remove listeners

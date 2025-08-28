@@ -66,10 +66,18 @@ Throughout the writing of the TDD, read relevant sections of code to understand 
    - Treat the first draft of the TDD as a "discovery pass" to identify all the work involved
    - Then, perform a rewrite where you take into account the totality of the work and make edits/adjustments to refine the architecture and work items
 
-7. **Add Formatting**
+7. **Add formatting**
     - At the top include the title (e.g. "My Feature TDD")
     - At the top, also include the creation date, and last updated date/time
     - At the bottom include a Document History template for summarizing future edits to the document, and include a line for creation of the doc
 
+## Add the test architecture
+Explicitly call the `qa-architect` to add the test architecture with the following instructions:
 
-    
+- Add a section to the `doc/<feature-slug>/tdd.md` doc for "Test Architecture"
+- State which test harness / test tools / test systems will be used
+- Add a high-level test plan defining what will be tested:
+    * Plan for unit tests (high level - where they'll be located and how they'll be executed)
+    * Plan for integration testing (high level - what integration tests are needed, where the tests will be located, how they'll be executed, what mocks will be required)
+    * Plan for mocking out major external or platform dependencies for use in tests
+    * Plan for testing major interdependent components in isolation before they are integrated
