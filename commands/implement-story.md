@@ -44,4 +44,4 @@ Perform the following sequence for the entir epic in this sprint plan.  For each
 
 ## Update the TDD
 
-When ALL stories in the sprint have been completed, open the TDD and mark the completed stories with green checks ✅ and if any epics were completed, mark the epic complete as well ✅
+When ALL tasks in the sprint have been completed, ensure the story all tasks in sprint-plan.md have been ✅ checked off, then open the TDD and mark the completed storie(s) with green checks ✅ and if any epics were completed, mark the epic complete as well ✅
